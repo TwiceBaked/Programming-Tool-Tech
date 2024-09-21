@@ -1,45 +1,48 @@
 package main
 
-import ("net/http" ; "io")
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"encoding/json"
+)
 
-func hello(res http.ResponseWriter, req *http.Request) {
-    res.Header().Set(
-        "Content-Type",
-        "text/html",
-    )
-    io.WriteString(
-        res,
-        `<DOCTYPE html>
-        <html>
-          <head>
-              <title>Hello, World</title>
-          </head>
-          <body>
-              Hello, World!
-          </body>
-        </html>`,
-    )
+func handlerTEXT(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w, "Hello, World!")
 }
 
-func JSON(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Type","text/html",)
-    io.WriteString(
-        res,
-        `<DOCTYPE html>
-        <html>
-          <head>
-              <title>JSON GWS</title>
-          </head>
-          <body>
-              This is the JSON site
-          </body>
-        </html>`,
-    )
+func loadFile(fileName string)(string, error) {
+	bytes, err := os.ReadFile(fileName)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
+
+
+func handlerHTML(w http.ResponseWriter, r *http.Request){
+	var html, _ = loadFile("GoWeb/index.html")
+	fmt.Fprintf(w, html)
+	
+}
+
+type Response struct {
+	Message string "json:message"
+}
+func handlerJSON(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+    response := Response{Message: "Hello, this is JSON!"}
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
+}
+
 
 
 func main() {
-    http.HandleFunc("/hello", hello)
-	http.HandleFunc("/JSON", JSON)
-    http.ListenAndServe(":9000", nil)
+	http.HandleFunc("/", handlerTEXT)
+	http.HandleFunc("/html", handlerHTML)
+	http.HandleFunc("/json", handlerJSON)
+	http.ListenAndServe(":9000", nil)
+	
 }
