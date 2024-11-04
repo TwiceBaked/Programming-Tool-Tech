@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"embed"
 	"io/fs"
+	"math/rand"
 )
 
 func handlerTEXT(w http.ResponseWriter, r *http.Request){
@@ -77,8 +78,15 @@ func update(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte("update - stubbed"))
 }
 
+func handlerD6(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	randomD6 := rand.Intn(6) + 1
+	fmt.Fprintf(w, "You rolled a: %d", randomD6)
+}
+
 func main() {
 	http.HandleFunc("/", handlerTEXT)
+	http.HandleFunc("/D6", handlerD6)
 	http.HandleFunc("/html", handlerHTML)
 	http.HandleFunc("/json", handlerJSON)
 	http.HandleFunc("/syllabus", handlerSYLLABUS)
